@@ -43,8 +43,15 @@ const ClienteDetalhes = () => {
       <p className="text-gray-700">{cliente.email || 'Email não informado'}</p>
       <p className="text-gray-700">CPF/CNPJ: {cliente.cpfCnpj}</p>
       <p className="text-gray-700">
-        Data de nascimento: {cliente.dataNascimento ? cliente.dataNascimento.toLocaleDateString() : 'Não informado'}
-      </p>
+        Data de nascimento:{' '}
+        {cliente.dataNascimento instanceof Date && !isNaN(cliente.dataNascimento.getTime())
+            ? cliente.dataNascimento.toLocaleDateString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+            })
+            : 'Não informada'}
+        </p>
       <p className="text-gray-700">Renda anual: R$ {cliente.rendaAnual?.toLocaleString() || '0,00'}</p>
       <p className="text-gray-700">Patrimônio: R$ {cliente.patrimonio?.toLocaleString() || '0,00'}</p>
       <p className="text-gray-700">Estado civil: {cliente.estadoCivil || 'Não informado'}</p>
