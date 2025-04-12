@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { fetchClientes } from '../services/api';
 import { Cliente } from '../types';
 
@@ -39,14 +40,19 @@ const Home = () => {
         className="border px-2 py-1 rounded mb-4 w-full"
       />
 
-      <ul>
-        {clientesPaginados.map(cliente => (
-          <li key={cliente.id} className="border-b py-2">
-            <p className="font-semibold">{cliente.nome}</p>
-            <p className="text-sm text-gray-600">{cliente.cpfCnpj}</p>
-          </li>
-        ))}
-      </ul>
+<ul>
+  {clientesPaginados.map(cliente => (
+    <li key={cliente.id} className="border-b py-2">
+      <Link
+        to={`/cliente/${cliente.cpfCnpj}`}
+        className="block hover:bg-gray-50 p-2 rounded"
+      >
+        <p className="font-semibold">{cliente.nome}</p>
+        <p className="text-sm text-gray-600">{cliente.cpfCnpj}</p>
+      </Link>
+    </li>
+  ))}
+</ul>
 
       <div className="flex gap-2 mt-4">
         {Array.from({ length: totalPaginas }, (_, i) => (
