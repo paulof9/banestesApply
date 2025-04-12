@@ -31,36 +31,37 @@ const ClienteDetalhes = () => {
   if (!cliente) return <div className="p-4">Carregando cliente...</div>;
 
   return (
-    <div className="p-4">
-      <Link to="/" className="text-blue-500 underline mb-4 inline-block">← Voltar</Link>
-      <h1 className="text-2xl font-bold">{cliente.nome}</h1>
-      <p className="text-gray-700">{cliente.email}</p>
-      <p className="text-gray-700">CPF/CNPJ: {cliente.cpfCnpj}</p>
-      <p className="text-gray-700">Data de nascimento: {cliente.dataNascimento.toLocaleDateString()}</p>
-      <p className="text-gray-700">Renda anual: R$ {cliente.rendaAnual.toLocaleString()}</p>
-      <p className="text-gray-700">Patrimônio: R$ {cliente.patrimonio.toLocaleString()}</p>
-      <p className="text-gray-700">Estado civil: {cliente.estadoCivil}</p>
+    <div className="p-4 max-w-4xl mx-auto">
+  <Link to="/" className="text-blue-500 underline mb-4 inline-block">← Voltar</Link>
+  <h1 className="text-2xl font-bold">{cliente.nome}</h1>
+  <p className="text-gray-700">{cliente.email}</p>
+  <p className="text-gray-700">CPF/CNPJ: {cliente.cpfCnpj}</p>
+  <p className="text-gray-700">Data de nascimento: {cliente.dataNascimento.toLocaleDateString()}</p>
+  <p className="text-gray-700">Renda anual: R$ {cliente.rendaAnual.toLocaleString()}</p>
+  <p className="text-gray-700">Patrimônio: R$ {cliente.patrimonio.toLocaleString()}</p>
+  <p className="text-gray-700">Estado civil: {cliente.estadoCivil}</p>
 
-      <h2 className="text-xl font-semibold mt-6 mb-2">Contas bancárias</h2>
-      <ul className="space-y-2">
-        {contas.map(conta => (
-          <li key={conta.id} className="border rounded p-2">
-            <p><strong>Tipo:</strong> {conta.tipo}</p>
-            <p><strong>Saldo:</strong> R$ {conta.saldo.toLocaleString()}</p>
-            <p><strong>Limite de crédito:</strong> R$ {conta.limiteCredito.toLocaleString()}</p>
-            <p><strong>Crédito disponível:</strong> R$ {conta.creditoDisponivel.toLocaleString()}</p>
-          </li>
-        ))}
-      </ul>
+  <h2 className="text-xl font-semibold mt-6 mb-2">Contas bancárias</h2>
+  <ul className="space-y-2">
+    {contas.map(conta => (
+      <li key={conta.id} className="border rounded p-2">
+        <p><strong>Tipo:</strong> {conta.tipo}</p>
+        <p><strong>Saldo:</strong> R$ {conta.saldo.toLocaleString()}</p>
+        <p><strong>Limite de crédito:</strong> R$ {conta.limiteCredito.toLocaleString()}</p>
+        <p><strong>Crédito disponível:</strong> R$ {conta.creditoDisponivel.toLocaleString()}</p>
+      </li>
+    ))}
+  </ul>
 
-      {agencia && (
-        <>
-          <h2 className="text-xl font-semibold mt-6 mb-2">Agência</h2>
-          <p><strong>Nome:</strong> {agencia.nome}</p>
-          <p><strong>Endereço:</strong> {agencia.endereco}</p>
-        </>
-      )}
-    </div>
+  {agencia && (
+    <>
+      <h2 className="text-xl font-semibold mt-6 mb-2">Agência</h2>
+      <p><strong>Nome:</strong> {agencia.nome}</p>
+      <p><strong>Endereço:</strong> {agencia.endereco}</p>
+    </>
+  )}
+</div>
+
   );
 };
 

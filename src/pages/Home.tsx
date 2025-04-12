@@ -40,9 +40,9 @@ const Home = () => {
         className="border px-2 py-1 rounded mb-4 w-full"
       />
 
-<ul>
+<ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
   {clientesPaginados.map(cliente => (
-    <li key={cliente.id} className="border-b py-2">
+    <li key={cliente.id} className="border p-4 rounded-lg">
       <Link
         to={`/cliente/${cliente.cpfCnpj}`}
         className="block hover:bg-gray-50 p-2 rounded"
