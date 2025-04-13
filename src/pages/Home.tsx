@@ -40,7 +40,7 @@ const Home = () => {
           setBusca(e.target.value);
           setPaginaAtual(1);
         }}
-        className="border px-4 py-2 rounded w-full mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="border px-4 py-2 rounded w-full mb-6 focus:outline-none focus:ring-2 focus:ring-banestes-300"
       />
 
       <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -65,8 +65,8 @@ const Home = () => {
               onClick={() => setPaginaAtual(i + 1)}
               className={`px-4 py-1 rounded border transition ${
                 i + 1 === paginaAtual
-                  ? 'bg-blue-600 text-white font-medium'
-                  : 'bg-white hover:bg-blue-100'
+                  ? 'bg-banestes-500 text-white font-medium'
+                  : 'bg-white hover:bg-banestes-300'
               }`}
             >
               {i + 1}

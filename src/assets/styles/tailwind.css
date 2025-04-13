@@ -1,1 +1,11 @@
 @import "tailwindcss";
+
+@theme {
+    --color-banestes-500: oklch(0.33 0.1028 253.33);
+    --color-banestes-400: oklch(0.56 0.1178 247.99);
+    --color-banestes-300: oklch(0.65 0.0337 217.01);
+  }
+
+body {
+    font-family: 'Roboto', sans-serif;
+  }

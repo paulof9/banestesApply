@@ -37,7 +37,7 @@ const ClienteDetalhes = () => {
 
   return (
     <div className="p-4 max-w-4xl mx-auto">
-      <Link to="/" className="text-blue-500 underline mb-4 inline-block">← Voltar</Link>
+      <Link to="/" className="textmx-auto lg:mx-0 hover:underline bg-banestes-400 text-white font-bold rounded-full my-2 py-2 px-4 shadow-md focus:outline-none focus:shadow-outline transform transition hover:scale-105 duration-300 ease-in-out-blue-500 mb-4 inline-block">← Voltar</Link>
 
       <h1 className="text-2xl font-bold">{cliente.nome || 'Nome não informado'}</h1>
       <p className="text-gray-700">{cliente.email || 'Email não informado'}</p>
