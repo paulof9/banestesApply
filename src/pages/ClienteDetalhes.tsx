@@ -4,7 +4,7 @@ import { fetchClientes, fetchContas, fetchAgencias } from '../services/api';
 import { Cliente, Conta, Agencia } from '../types';
 
 const ClienteDetalhes = () => {
-  const { cpfCnpj } = useParams();
+  const { id } = useParams();
   const [cliente, setCliente] = useState<Cliente | null>(null);
   const [contas, setContas] = useState<Conta[]>([]);
   const [agencia, setAgencia] = useState<Agencia | null>(null);
@@ -18,7 +18,7 @@ const ClienteDetalhes = () => {
         fetchAgencias(),
       ]);
 
-      const clienteSelecionado = clientes.find(c => c.cpfCnpj === cpfCnpj);
+      const clienteSelecionado = clientes.find(c => String(c.id) === id);
       setCliente(clienteSelecionado || null);
 
       if (clienteSelecionado) {
@@ -30,7 +30,7 @@ const ClienteDetalhes = () => {
     };
 
     carregarDados();
-  }, [cpfCnpj]);
+  }, [id]);
 
   if (carregando) return <div className="p-4">Carregando cliente...</div>;
   if (!cliente) return <div className="p-4 text-red-500">Cliente não encontrado.</div>;
@@ -39,19 +39,19 @@ const ClienteDetalhes = () => {
     <div className="p-4 max-w-4xl mx-auto">
       <Link to="/" className="text-blue-500 underline mb-4 inline-block">← Voltar</Link>
 
-      <h1 className="text-2xl font-bold">{cliente.nome}</h1>
+      <h1 className="text-2xl font-bold">{cliente.nome || 'Nome não informado'}</h1>
       <p className="text-gray-700">{cliente.email || 'Email não informado'}</p>
-      <p className="text-gray-700">CPF/CNPJ: {cliente.cpfCnpj}</p>
+      <p className="text-gray-700">CPF/CNPJ: {cliente.cpfCnpj || 'Não informado'}</p>
       <p className="text-gray-700">
         Data de nascimento:{' '}
-        {cliente.dataNascimento instanceof Date && !isNaN(cliente.dataNascimento.getTime())
-            ? cliente.dataNascimento.toLocaleDateString('pt-BR', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
+        {cliente.dataNascimento
+          ? new Date(cliente.dataNascimento).toLocaleDateString('pt-BR', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
             })
-            : 'Não informada'}
-        </p>
+          : 'Não informada'}
+      </p>
       <p className="text-gray-700">Renda anual: R$ {cliente.rendaAnual?.toLocaleString() || '0,00'}</p>
       <p className="text-gray-700">Patrimônio: R$ {cliente.patrimonio?.toLocaleString() || '0,00'}</p>
       <p className="text-gray-700">Estado civil: {cliente.estadoCivil || 'Não informado'}</p>
@@ -61,10 +61,10 @@ const ClienteDetalhes = () => {
         <ul className="space-y-2">
           {contas.map(conta => (
             <li key={conta.id} className="border rounded p-2">
-              <p><strong>Tipo:</strong> {conta.tipo}</p>
-              <p><strong>Saldo:</strong> R$ {conta.saldo.toLocaleString()}</p>
-              <p><strong>Limite de crédito:</strong> R$ {conta.limiteCredito.toLocaleString()}</p>
-              <p><strong>Crédito disponível:</strong> R$ {conta.creditoDisponivel.toLocaleString()}</p>
+              <p><strong>Tipo:</strong> {conta.tipo || 'Tipo não informado'}</p>
+              <p><strong>Saldo:</strong> R$ {conta.saldo?.toLocaleString() || '0,00'}</p>
+              <p><strong>Limite de crédito:</strong> R$ {conta.limiteCredito?.toLocaleString() || '0,00'}</p>
+              <p><strong>Crédito disponível:</strong> R$ {conta.creditoDisponivel?.toLocaleString() || '0,00'}</p>
             </li>
           ))}
         </ul>
@@ -75,8 +75,8 @@ const ClienteDetalhes = () => {
       <h2 className="text-xl font-semibold mt-6 mb-2">Agência</h2>
       {agencia ? (
         <>
-          <p><strong>Nome:</strong> {agencia.nome}</p>
-          <p><strong>Endereço:</strong> {agencia.endereco}</p>
+          <p><strong>Nome:</strong> {agencia.nome || 'Não informado'}</p>
+          <p><strong>Endereço:</strong> {agencia.endereco || 'Não informado'}</p>
         </>
       ) : (
         <p className="text-gray-500">Agência não identificada ou não vinculada.</p>

@@ -7,7 +7,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/cliente/:cpfCnpj" element={<ClienteDetalhes />} />
+        <Route path="/cliente/:id" element={<ClienteDetalhes />} />
       </Routes>
     </Router>
   );

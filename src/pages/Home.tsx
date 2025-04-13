@@ -38,7 +38,7 @@ const Home = () => {
         value={busca}
         onChange={e => {
           setBusca(e.target.value);
-          setPaginaAtual(1); // Reinicia para a primeira página ao filtrar
+          setPaginaAtual(1);
         }}
         className="border px-4 py-2 rounded w-full mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
@@ -47,11 +47,11 @@ const Home = () => {
         {clientesPaginados.map(cliente => (
           <li key={cliente.id} className="border p-4 rounded-lg shadow-sm hover:shadow-md transition">
             <Link
-              to={`/cliente/${cliente.cpfCnpj}`}
+              to={`/cliente/${cliente.id}`}
               className="block hover:bg-gray-50 p-2 rounded"
             >
-              <p className="font-semibold text-lg">{cliente.nome}</p>
-              <p className="text-sm text-gray-600">{cliente.cpfCnpj}</p>
+              <p className="font-semibold text-lg">{cliente.nome || 'Nome não informado'}</p>
+              <p className="text-sm text-gray-600">{cliente.cpfCnpj || 'CPF/CNPJ não informado'}</p>
             </Link>
           </li>
         ))}
