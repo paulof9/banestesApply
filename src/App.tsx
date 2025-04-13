@@ -4,7 +4,6 @@ import Footer from './components/Footer';
 import Home from './pages/Home';
 import ClienteDetalhes from './pages/ClienteDetalhes';
 
-
 function App() {
   return (
 <Router>
