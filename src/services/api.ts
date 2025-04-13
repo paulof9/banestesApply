@@ -28,14 +28,26 @@ const parseCSV = async <T>(url: string): Promise<T[]> => {
   });
 };
 
+const parseNumber = (value: string | number | undefined): number | undefined => {
+  if (typeof value === 'string') {
+    const cleanedValue = value
+      .replace('R$', '')
+      .replace(',', '.') // Apenas substitui vírgula por ponto
+      .trim();
+    const num = parseFloat(cleanedValue);
+    return isNaN(num) ? undefined : num;
+  }
+  return typeof value === 'number' ? value : undefined;
+};
+
 export const fetchClientes = async (): Promise<Cliente[]> => {
   const data = await parseCSV<Cliente>(clientesURL);
   return data.map(cliente => ({
     ...cliente,
     dataNascimento: new Date(cliente.dataNascimento),
-    rendaAnual: Number(cliente.rendaAnual),
-    patrimonio: Number(cliente.patrimonio),
-    codigoAgencia: Number(cliente.codigoAgencia),
+    rendaAnual: parseNumber(cliente.rendaAnual) ?? 0,
+    patrimonio: parseNumber(cliente.patrimonio) ?? 0,
+    codigoAgencia: parseNumber(cliente.codigoAgencia) ?? 0,
   }));
 };
 
@@ -43,9 +55,9 @@ export const fetchContas = async (): Promise<Conta[]> => {
   const data = await parseCSV<Conta>(contasURL);
   return data.map(conta => ({
     ...conta,
-    saldo: Number(conta.saldo),
-    limiteCredito: Number(conta.limiteCredito),
-    creditoDisponivel: Number(conta.creditoDisponivel),
+    saldo: parseNumber(conta.saldo) ?? 0,
+    limiteCredito: parseNumber(conta.limiteCredito) ?? 0,
+    creditoDisponivel: parseNumber(conta.creditoDisponivel) ?? 0,
   }));
 };
 
@@ -53,6 +65,6 @@ export const fetchAgencias = async (): Promise<Agencia[]> => {
   const data = await parseCSV<Agencia>(agenciasURL);
   return data.map(agencia => ({
     ...agencia,
-    codigo: Number(agencia.codigo),
+    codigo: parseNumber(agencia.codigo) ?? 0,
   }));
 };
