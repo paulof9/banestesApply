@@ -34,13 +34,14 @@ const parseCSV = async <T>(url: string): Promise<T[]> => {
 const parseNumber = (value: string | number | undefined): number | undefined => {
   if (typeof value === 'string') {
     const cleanedValue = value
-      .replace('R$', '') // Remove R$.
-      .replace(',', '.') // Substitui a vírgula pelo ponto.
-      .trim(); // Remove espaços em branco no início e no final da string.
-    const num = parseFloat(cleanedValue); // Tenta converter a string limpa para um número de ponto flutuante.
-    return isNaN(num) ? undefined : num; // Retorna o número se a conversão for bem-sucedida, caso contrário, retorna undefined.
+      .replace('R$', '')          // Remove "R$"
+      .replace(/\./g, '')         // Remove todos os pontos (assumindo serem separadores de milhar)
+      .replace(',', '.')         // Substitui a vírgula por ponto (para decimal)
+      .trim();
+    const num = parseFloat(cleanedValue);
+    return isNaN(num) ? undefined : num;
   }
-  return typeof value === 'number' ? value : undefined; // Se o valor já for um número, retorna-o diretamente.
+  return typeof value === 'number' ? value : undefined;
 };
 
 // Função assíncrona para buscar os dados dos clientes.
