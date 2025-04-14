@@ -156,7 +156,7 @@ const ClienteDetalhes = () => {
         ) : cliente?.rg ? (
           `RG: ${cliente.rg}`
         ) : (
-          'Não informado'
+          'CPF/CNPJ ou RG Não informado'
         )}
       </p>
       <p className="text-gray-700">
