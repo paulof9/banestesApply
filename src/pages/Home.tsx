@@ -37,22 +37,6 @@ const Home = () => {
     const carregarClientes = async () => {
       const dados = await fetchClientes(); // Chama a função para buscar os dados dos clientes da API.
 
-      // Define uma função de comparação
-      const compararClientes = (a: Cliente, b: Cliente) => {
-        // Obtém o nome de cada cliente, convertendo para minúsculas para uma comparação case-insensitive.
-        const nomeA = (a.nome || '').toLowerCase(); // Se o nome for undefined, usa uma string vazia para evitar erros.
-        const nomeB = (b.nome || '').toLowerCase(); // ""
-
-        // Realiza a comparação alfabética.
-        if (nomeA < nomeB) {
-          return -1;
-        }
-        if (nomeA > nomeB) {
-          return 1;
-        }
-        return 0; // Se os nomes são iguais, retorna 0 (a ordem não importa).
-      };
-
       /* Cria uma cópia do array 'dados' usando o spread operator (...) e então ordena essa cópia usando a função 'compararClientes'.
        * Importante para não modificar o estado 'clientes' diretamente.*/
       const clientesOrdenados = [...dados].sort(compararClientes);
