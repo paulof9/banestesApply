@@ -1,7 +1,21 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom'; // Import useNavigate
 import { fetchClientes } from '../services/api'; // Importa a função para buscar os dados dos clientes da API.
 import { Cliente } from '../types'; // Importa a interface Cliente para tipagem.
+
+// Compara clientes com base em seus nomes para ordenar
+const compararClientes = (a: Cliente, b: Cliente) => {
+  const nomeA = (a.nome || '').toLowerCase();
+  const nomeB = (b.nome || '').toLowerCase();
+
+  if (nomeA < nomeB) {
+    return -1;
+  }
+  if (nomeA > nomeB) {
+    return 1;
+  }
+  return 0;
+};
 
 // Componente que exibe a lista de clientes na página inicial.
 const Home = () => {
@@ -10,19 +24,46 @@ const Home = () => {
   // Define um estado para controlar o termo de busca inserido pelo usuário.
   const [busca, setBusca] = useState('');
   // Define um estado para controlar a página atual da lista paginada, iniciando na página 1.
-  const [paginaAtual, setPaginaAtual] = useState(1);
+  const [paginaAtual, setPaginaAtual] = useState(() => {
+    const storedPage = sessionStorage.getItem('clientesPagina');
+    return storedPage ? parseInt(storedPage, 10) : 1;
+  });
   // Define o número de itens (clientes) a serem exibidos por página.
   const itensPorPagina = 10;
+  const navigate = useNavigate(); // Inicialize useNavigate
 
-  // Executado uma vez após a primeira renderização do componente.
   useEffect(() => {
-    // Função assíncrona para carregar os dados dos clientes da API.
+    // Função assíncrona para carregar os dados dos clientes e ordená-los alfabeticamente por nome.
     const carregarClientes = async () => {
-      const dados = await fetchClientes(); // Chama a função para buscar os clientes.
-      setClientes(dados); // Atualiza o estado 'clientes' com os dados recebidos.
+      const dados = await fetchClientes(); // Chama a função para buscar os dados dos clientes da API.
+
+      // Define uma função de comparação
+      const compararClientes = (a: Cliente, b: Cliente) => {
+        // Obtém o nome de cada cliente, convertendo para minúsculas para uma comparação case-insensitive.
+        const nomeA = (a.nome || '').toLowerCase(); // Se o nome for undefined, usa uma string vazia para evitar erros.
+        const nomeB = (b.nome || '').toLowerCase(); // ""
+
+        // Realiza a comparação alfabética.
+        if (nomeA < nomeB) {
+          return -1;
+        }
+        if (nomeA > nomeB) {
+          return 1;
+        }
+        return 0; // Se os nomes são iguais, retorna 0 (a ordem não importa).
+      };
+
+      /* Cria uma cópia do array 'dados' usando o spread operator (...) e então ordena essa cópia usando a função 'compararClientes'.
+       * Importante para não modificar o estado 'clientes' diretamente.*/
+      const clientesOrdenados = [...dados].sort(compararClientes);
+
+      // Atualiza o estado 'clientes' com o array ordenado.
+      setClientes(clientesOrdenados);
     };
-    carregarClientes(); // Chama a função de carregamento dos clientes.
-  }, []); // O array de dependências vazio garante que seja executado apenas uma vez.
+
+    // Chama a função 'carregarClientes' para iniciar o processo de busca e ordenação dos dados.
+    carregarClientes();
+  }, []); // Será executado apenas uma vez.
 
   // Filtra a lista de clientes com base no termo de busca. A busca é case-insensitive e procura por nome ou CPF/CNPJ.
   const clientesFiltrados = clientes.filter(cliente =>
@@ -37,6 +78,17 @@ const Home = () => {
     (paginaAtual - 1) * itensPorPagina, // Calcula o índice inicial.
     paginaAtual * itensPorPagina // Calcula o índice final.
   );
+
+  // Função para lidar com o clique no cliente e salvar a página atual antes de navegar.
+  const handleClienteClick = (id: string) => {
+    sessionStorage.setItem('clientesPagina', String(paginaAtual)); // Salva a página atual
+    navigate(`/cliente/${id}`); // Navega para a página de detalhes do cliente.
+  };
+
+  // Função para atualizar o estado da página atual.
+  const handlePaginaChange = (novaPagina: number) => {
+    setPaginaAtual(novaPagina);
+  };
 
   return (
     <div className="p-4 max-w-6xl mx-auto">
@@ -60,15 +112,15 @@ const Home = () => {
           // Item da lista para cada cliente
           <li key={cliente.id} className="border p-4 rounded-lg shadow-sm hover:shadow-md transition">
             {/* Link para a página de detalhes do cliente */}
-            <Link
-              to={`/cliente/${cliente.id}`}
-              className="block hover:bg-gray-50 p-2 rounded"
+            <div
+              onClick={() => handleClienteClick(cliente.id)}
+              className="block hover:bg-gray-50 p-2 rounded cursor-pointer"
             >
               {/* Exibe o nome do cliente ou uma mensagem se o nome não estiver disponível */}
               <p className="font-semibold text-lg">{cliente.nome || 'Nome não informado'}</p>
               {/* Exibe o CPF/CNPJ do cliente ou uma mensagem se não estiver disponível */}
               <p className="text-sm text-gray-600">{cliente.cpfCnpj || 'CPF/CNPJ não informado'}</p>
-            </Link>
+            </div>
           </li>
         ))}
       </ul>
@@ -80,7 +132,7 @@ const Home = () => {
           {Array.from({ length: totalPaginas }, (_, i) => (
             <button
               key={i}
-              onClick={() => setPaginaAtual(i + 1)} // Define a página atual ao clicar no botão.
+              onClick={() => handlePaginaChange(i + 1)} // Define a página atual ao clicar no botão.
               className={`px-4 py-1 rounded border transition ${
                 i + 1 === paginaAtual
                   ? 'bg-banestes-500 text-white font-medium' // Estilo para o botão da página atual.
