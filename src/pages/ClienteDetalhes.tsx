@@ -60,8 +60,12 @@ const ClienteDetalhes = () => {
         fetchAgencias(),
       ]);
 
-      const clienteSelecionado = clientes.find(c => String(c.id) === id);
+      console.log('Dados brutos dos clientes:', clientes); // LOG: Verificando os dados brutos
+
+      const clienteSelecionado = clientes.find(c => c.id === id);
       setCliente(clienteSelecionado || null);
+
+      console.log('clienteSelecionado:', clienteSelecionado); // LOG: Verificando o cliente selecionado
 
       if (clienteSelecionado) {
         setContas(contas.filter(c => c.cpfCnpjCliente === clienteSelecionado.cpfCnpj));
@@ -142,12 +146,22 @@ const ClienteDetalhes = () => {
       </Link>
 
       {/* Informações do cliente */}
-      <h1 className="text-2xl font-bold">{cliente.nome || 'Nome não informado'}</h1>
-      <p className="text-gray-700">{cliente.email || 'Email não informado'}</p>
-      <p className="text-gray-700">CPF/CNPJ: {cliente.cpfCnpj || 'Não informado'}</p>
+      <h1 className="text-2xl font-bold">
+        {cliente?.nomeSocial ? cliente.nomeSocial : cliente?.nome || 'Nome não informado'}
+      </h1>
+      <p className="text-gray-700">{cliente?.email || 'Email não informado'}</p>
+      <p className="text-gray-700">
+        {cliente?.cpfCnpj ? (
+          `CPF/CNPJ: ${cliente.cpfCnpj}`
+        ) : cliente?.rg ? (
+          `RG: ${cliente.rg}`
+        ) : (
+          'Não informado'
+        )}
+      </p>
       <p className="text-gray-700">
         Data de nascimento:{' '}
-        {cliente.dataNascimento
+        {cliente?.dataNascimento
           ? new Date(cliente.dataNascimento).toLocaleDateString('pt-BR', {
               day: '2-digit',
               month: '2-digit',
@@ -155,9 +169,9 @@ const ClienteDetalhes = () => {
             })
           : 'Não informada'}
       </p>
-      <p className="text-gray-700">Renda anual: {formatarMoeda(cliente.rendaAnual)}</p>
-      <p className="text-gray-700">Patrimônio: {formatarMoeda(cliente.patrimonio)}</p>
-      <p className="text-gray-700">Estado civil: {cliente.estadoCivil || 'Não informado'}</p>
+      <p className="text-gray-700">Renda anual: {formatarMoeda(cliente?.rendaAnual)}</p>
+      <p className="text-gray-700">Patrimônio: {formatarMoeda(cliente?.patrimonio)}</p>
+      <p className="text-gray-700">Estado civil: {cliente?.estadoCivil || 'Não informado'}</p>
 
       {/* Contas bancárias do cliente */}
       <h2 className="text-xl font-semibold mt-6 mb-2">Contas bancárias</h2>
@@ -165,10 +179,10 @@ const ClienteDetalhes = () => {
         <ul className="space-y-2">
           {contas.map(conta => (
             <li key={conta.id} className="border rounded p-2">
-              <p><strong>Tipo:</strong> {conta.tipo || 'Tipo não informado'}</p>
-              <p><strong>Saldo:</strong> {formatarMoeda(conta.saldo)}</p>
-              <p><strong>Limite de crédito:</strong> {formatarMoeda(conta.limiteCredito)}</p>
-              <p><strong>Crédito disponível:</strong> {formatarMoeda(conta.creditoDisponivel)}</p>
+              <p><strong>Tipo:</strong> {conta?.tipo || 'Tipo não informado'}</p>
+              <p><strong>Saldo:</strong> {formatarMoeda(conta?.saldo)}</p>
+              <p><strong>Limite de crédito:</strong> {formatarMoeda(conta?.limiteCredito)}</p>
+              <p><strong>Crédito disponível:</strong> {formatarMoeda(conta?.creditoDisponivel)}</p>
             </li>
           ))}
         </ul>
@@ -180,8 +194,8 @@ const ClienteDetalhes = () => {
       <h2 className="text-xl font-semibold mt-6 mb-2">Agência</h2>
       {agencia ? (
         <>
-          <p><strong>Nome:</strong> {agencia.nome || 'Não informado'}</p>
-          <p><strong>Endereço:</strong> {agencia.endereco || 'Não informado'}</p>
+          <p><strong>Nome:</strong> {agencia?.nome || 'Não informado'}</p>
+          <p><strong>Endereço:</strong> {agencia?.endereco || 'Não informado'}</p>
           {/* Container para o mapa da agência */}
           <div ref={mapRef} style={{ height: '200px', width: '100%', marginTop: '10px', borderRadius: '8px', overflow: 'hidden' }}></div>
         </>
