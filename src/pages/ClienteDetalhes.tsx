@@ -127,7 +127,7 @@ const ClienteDetalhes = () => {
 
   // Exibe um loader enquanto os dados são carregados.
   if (carregando) return (
-    <div className="flex justify-center items-center h-screen pb-16">
+    <div className="flex justify-center items-center h-96">
       <MoonLoader color="#007bff" loading={carregando} size={50} />
     </div>
   );

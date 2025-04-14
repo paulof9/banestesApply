@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchClientes } from '../services/api';
 import { Cliente } from '../types';
+import { MoonLoader } from 'react-spinners';
 
-// Compara clientes alfabeticamente por nome (case-insensitive).
-const compararClientes = (a: Cliente, b: Cliente) => {
+// Função utilitária para ordenação alfabética (case-insensitive)
+const compararClientes = (a: Cliente, b: Cliente): number => {
   const nomeA = (a.nome || '').toLowerCase();
   const nomeB = (b.nome || '').toLowerCase();
   if (nomeA < nomeB) return -1;
@@ -12,105 +13,151 @@ const compararClientes = (a: Cliente, b: Cliente) => {
   return 0;
 };
 
-// Exibe a lista de clientes paginada e permite busca.
-const Home = () => {
+const Home: React.FC = () => {
   const [clientes, setClientes] = useState<Cliente[]>([]);
-  const [busca, setBusca] = useState('');
-  // Mantém a página atual da lista, persistindo no sessionStorage.
-  const [paginaAtual, setPaginaAtual] = useState(() => {
+  const [carregando, estaCarregando] = useState<boolean>(false); // Novo estado para controlar o loading
+  // Inicializa busca e página atual a partir do sessionStorage para persistência
+  const [busca, setBusca] = useState<string>(() => sessionStorage.getItem('clientesBusca') || '');
+  const [paginaAtual, setPaginaAtual] = useState<number>(() => {
     const storedPage = sessionStorage.getItem('clientesPagina');
     return storedPage ? parseInt(storedPage, 10) : 1;
   });
-  const itensPorPagina = 10;
+
+  const itensPorPagina: number = 10;
   const navigate = useNavigate();
 
-  // Carrega e ordena os clientes na montagem inicial.
+  // Carrega e ordena os clientes na montagem inicial do componente
   useEffect(() => {
     const carregarClientes = async () => {
-      const dados = await fetchClientes();
-      const clientesOrdenados = [...dados].sort(compararClientes);
-      setClientes(clientesOrdenados);
+      estaCarregando(true); // Inicia o loading antes de buscar os dados
+      try {
+        const dados = await fetchClientes();
+        const clientesOrdenados = [...dados].sort(compararClientes);
+        setClientes(clientesOrdenados);
+      } catch (error) {
+        console.error("Erro ao carregar clientes:", error);
+        // Considerar adicionar um estado de erro para feedback ao usuário
+      } finally {
+        estaCarregando(false); // Finaliza o loading, independentemente do resultado
+      }
     };
     carregarClientes();
-  }, []);
+  }, []); // Array vazio indica que executa apenas na montagem
 
-  // Salva a página atual no sessionStorage sempre que ela muda.
+  // Persiste busca e página atual no sessionStorage sempre que mudarem
+  useEffect(() => {
+    sessionStorage.setItem('clientesBusca', busca);
+  }, [busca]);
+
   useEffect(() => {
     sessionStorage.setItem('clientesPagina', String(paginaAtual));
   }, [paginaAtual]);
 
-  // Filtra clientes por nome ou CPF/CNPJ (case-insensitive).
+  // Filtra os clientes com base no termo de busca (nome ou CPF/CNPJ)
   const clientesFiltrados = clientes.filter(cliente =>
     (cliente.nome || '').toLowerCase().includes(busca.toLowerCase()) ||
-    (cliente.cpfCnpj || '').includes(busca)
+    (cliente.cpfCnpj || '').includes(busca) // CPF/CNPJ geralmente não precisa de toLowerCase
   );
 
+  // Calcula o número total de páginas com base nos resultados filtrados
   const totalPaginas = Math.ceil(clientesFiltrados.length / itensPorPagina);
-  // Obtém os clientes para a página atual.
-  const clientesPaginados = clientesFiltrados.slice(
-    (paginaAtual - 1) * itensPorPagina,
-    paginaAtual * itensPorPagina
-  );
 
-  // Salva a página atual e navega para os detalhes do cliente.
+  // Efeito para ajustar a página atual caso ela se torne inválida após um filtro
+  useEffect(() => {
+    const maxPagina = Math.max(1, totalPaginas); // Garante que maxPagina seja pelo menos 1
+    if (paginaAtual > maxPagina) {
+      setPaginaAtual(maxPagina);
+    }
+  }, [totalPaginas, paginaAtual]);
+
+  // Calcula os índices
+  const indiceInicial = Math.max(0, (paginaAtual - 1)) * itensPorPagina;
+  const clientesPaginados = clientesFiltrados.slice(indiceInicial, indiceInicial + itensPorPagina);
+
+  // Navega para a página de detalhes do cliente
   const handleClienteClick = (id: string) => {
-    sessionStorage.setItem('clientesPagina', String(paginaAtual));
     navigate(`/cliente/${id}`);
   };
 
-  // Atualiza a página atual.
+  // Altera a página atual, garantindo que o valor esteja dentro dos limites válidos
   const handlePaginaChange = (novaPagina: number) => {
-    setPaginaAtual(novaPagina);
+    const paginaValida = Math.max(1, Math.min(novaPagina, totalPaginas || 1));
+    setPaginaAtual(paginaValida);
+  };
+
+  // Atualiza o termo de busca e reseta para a primeira página
+  const handleBuscaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setBusca(e.target.value);
+    setPaginaAtual(1);
   };
 
   return (
     <div className="p-4 max-w-6xl mx-auto">
       <h1 className="text-2xl font-bold mb-6 text-center">Lista de Clientes</h1>
 
-      {/* Campo de busca */}
       <input
         type="text"
         placeholder="Buscar por nome ou CPF/CNPJ"
         value={busca}
-        onChange={e => {
-          setBusca(e.target.value);
-          setPaginaAtual(1); // Reseta a página ao iniciar nova busca.
-        }}
-        className="border px-4 py-2 rounded w-full mb-6 focus:outline-none focus:ring-2 focus:ring-banestes-300"
+        onChange={handleBuscaChange}
+        className="border px-4 py-2 rounded w-full mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500" // Exemplo: troquei ring-banestes por blue
       />
 
-      {/* Lista de clientes */}
-      <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {clientesPaginados.map(cliente => (
-          <li key={cliente.id} className="border p-4 rounded-lg shadow-sm hover:shadow-md transition">
-            <div
-              onClick={() => handleClienteClick(cliente.id)}
-              className="block hover:bg-gray-50 p-2 rounded cursor-pointer"
-            >
-              <p className="font-semibold text-lg">{cliente.nome || 'Nome não informado'}</p>
-              <p className="text-sm text-gray-600">{cliente.cpfCnpj || 'CPF/CNPJ não informado'}</p>
-            </div>
-          </li>
-        ))}
-      </ul>
-
-      {/* Paginação */}
-      {totalPaginas > 1 && (
-        <div className="flex flex-wrap justify-center gap-2 mt-6">
-          {Array.from({ length: totalPaginas }, (_, i) => (
-            <button
-              key={i}
-              onClick={() => handlePaginaChange(i + 1)}
-              className={`px-4 py-1 rounded border transition ${
-                i + 1 === paginaAtual
-                  ? 'bg-banestes-500 text-white font-medium'
-                  : 'bg-white hover:bg-banestes-300'
-              }`}
-            >
-              {i + 1}
-            </button>
-          ))}
+      {/* Mensagens de estado: Carregando ou Nenhum resultado */}
+      {carregando ? (
+        <div className="flex justify-center items-center ">
+          <MoonLoader color="#007bff" size={50} />
         </div>
+      ) : (
+        <>
+          {clientes.length === 0 && !busca && (
+            <p className="text-center text-gray-500 my-4">Nenhum cliente cadastrado ainda.</p>
+          )}
+          {clientes.length > 0 && clientesFiltrados.length === 0 && busca && (
+            <p className="text-center text-gray-500 my-4">Nenhum cliente encontrado para "{busca}".</p>
+          )}
+
+          {/* Lista de Clientes Paginados */}
+          {clientesPaginados.length > 0 && (
+            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {clientesPaginados.map(cliente => (
+                <li key={cliente.id} className="border p-4 rounded-lg shadow-sm hover:shadow-md transition">
+                  <div
+                    onClick={() => handleClienteClick(cliente.id)}
+                    className="block hover:bg-gray-50 p-2 rounded cursor-pointer"
+                  >
+                    <p className="font-semibold text-lg">{cliente.nome || 'Nome não informado'}</p>
+                    <p className="text-sm text-gray-600">{cliente.cpfCnpj || 'CPF/CNPJ não informado'}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {/* Controles de Paginação */}
+          {totalPaginas > 1 && (
+            <div className="flex flex-wrap justify-center gap-2 mt-6">
+              {Array.from({ length: totalPaginas }, (_, i) => {
+                const numeroPagina = i + 1;
+                const isCurrent = numeroPagina === paginaAtual;
+                return (
+                  <button
+                    key={numeroPagina}
+                    onClick={() => handlePaginaChange(numeroPagina)}
+                    disabled={isCurrent}
+                    className={`px-4 py-1 rounded border transition ${
+                      isCurrent
+                        ? 'bg-blue-600 text-white font-medium cursor-default' // Exemplo: troquei cor banestes por blue
+                        : 'bg-white hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed'
+                    }`}
+                  >
+                    {numeroPagina}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </>
       )}
     </div>
   );
