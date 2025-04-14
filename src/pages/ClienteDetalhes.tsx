@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { fetchClientes, fetchContas, fetchAgencias } from '../services/api';
 import { Cliente, Conta, Agencia } from '../types';
@@ -48,6 +48,8 @@ const ClienteDetalhes = () => {
   const [contas, setContas] = useState<Conta[]>([]);
   const [agencia, setAgencia] = useState<Agencia | null>(null);
   const [carregando, setCarregando] = useState(true);
+  const [map, setMap] = useState<google.maps.Map | null>(null); // Estado para o objeto do mapa
+  const mapRef = useRef<HTMLDivElement>(null); // Referência para o elemento div do mapa
 
   // Busca os dados do cliente, suas contas e a agência ao montar o componente ou quando o 'id' da URL muda.
   useEffect(() => {
@@ -71,6 +73,53 @@ const ClienteDetalhes = () => {
 
     carregarDados();
   }, [id]);
+
+  // Inicializa o mapa quando a agência é carregada e a API do Google Maps estiver disponível.
+  useEffect(() => {
+    if (agencia && mapRef.current && !map && window.google) {
+      const mapOptions: google.maps.MapOptions = {
+        center: { lat: -20.8358, lng: -40.7161 }, // Centro inicial (Piúma, ES - você pode ajustar)
+        zoom: 15, // Nível de zoom inicial
+      };
+      const newMap = new window.google.maps.Map(mapRef.current, mapOptions);
+      setMap(newMap);
+
+      // Adiciona "Banestes" ao endereço para a pesquisa de geocoding, buscando uma localização mais precisa.
+      const enderecoCompleto = `Banestes ${agencia.nome}, ${agencia.endereco}`;
+      const geocoder = new window.google.maps.Geocoder();
+
+      geocoder.geocode(
+        { address: enderecoCompleto },
+        (results: google.maps.GeocoderResult[] | null, status: google.maps.GeocoderStatus) => {
+          if (status === 'OK' && results && results.length > 0) {
+            new window.google.maps.Marker({
+              map: newMap,
+              position: results[0].geometry.location,
+              title: agencia.nome || 'Agência',
+            });
+            newMap.setCenter(results[0].geometry.location); // Centraliza o mapa na localização da agência encontrada.
+          } else {
+            console.error('Geocoding falhou:', status);
+            geocoder.geocode(
+              { address: agencia.endereco },
+              (fallbackResults: google.maps.GeocoderResult[] | null, fallbackStatus: google.maps.GeocoderStatus) => {
+                if (fallbackStatus === 'OK' && fallbackResults && fallbackResults.length > 0) {
+                  new window.google.maps.Marker({
+                    map: newMap,
+                    position: fallbackResults[0].geometry.location,
+                    title: agencia.nome || 'Agência (Localização aproximada)',
+                  });
+                  newMap.setCenter(fallbackResults[0].geometry.location); // Centraliza o mapa na localização aproximada.
+                } else {
+                  console.error('Geocoding falhou novamente com o endereço simples:', fallbackStatus);
+                }
+              }
+            );
+          }
+        }
+      );
+    }
+  }, [agencia, map, mapRef]); // Depende de 'agencia' para buscar o endereço e 'mapRef' para o container do mapa.
 
   // Exibe um loader enquanto os dados são carregados.
   if (carregando) return (
@@ -133,6 +182,8 @@ const ClienteDetalhes = () => {
         <>
           <p><strong>Nome:</strong> {agencia.nome || 'Não informado'}</p>
           <p><strong>Endereço:</strong> {agencia.endereco || 'Não informado'}</p>
+          {/* Container para o mapa da agência */}
+          <div ref={mapRef} style={{ height: '200px', width: '100%', marginTop: '10px', borderRadius: '8px', overflow: 'hidden' }}></div>
         </>
       ) : (
         <p className="text-gray-500">Agência não identificada ou não vinculada.</p>
