@@ -7,7 +7,7 @@ import ClienteDetalhes from './pages/ClienteDetalhes';
 function App() {
   return (
 <Router>
-      {/* flex para garantir que o footer fique no fim da página */}
+      {/* Flex para garantir que o footer fique no fim da página */}
       <div className="flex flex-col min-h-screen">
         <Header />
         <div className="flex-1">
