@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useNavigate } from 'react-router-dom';
 import { fetchClientes } from '../services/api'; // Importa a função para buscar os dados dos clientes da API.
 import { Cliente } from '../types'; // Importa a interface Cliente para tipagem.
 
@@ -95,7 +95,6 @@ const Home = () => {
         {clientesPaginados.map(cliente => (
           // Item da lista para cada cliente
           <li key={cliente.id} className="border p-4 rounded-lg shadow-sm hover:shadow-md transition">
-            {/* Link para a página de detalhes do cliente */}
             <div
               onClick={() => handleClienteClick(cliente.id)}
               className="block hover:bg-gray-50 p-2 rounded cursor-pointer"
