@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { fetchClientes, fetchContas, fetchAgencias } from '../services/api';
 import { Cliente, Conta, Agencia } from '../types';
+import { MoonLoader } from 'react-spinners';
 
 // Função para formatar valores monetários
 function formatarMoeda(valor: string | number | null | undefined): string {
@@ -88,8 +89,12 @@ const ClienteDetalhes = () => {
     carregarDados(); // Chama a função para carregar os dados.
   }, [id]); // O useEffect será executado novamente se o valor de 'id' mudar.
 
-  // Renderiza uma mensagem de carregamento enquanto os dados estão sendo buscados ou se o cliente nao for encontrado.
-  if (carregando) return <div className="p-4">Carregando cliente...</div>;
+  // Loading enquanto os dados estão sendo buscados ou mensagem se o cliente nao for encontrado.
+  if (carregando) return (
+    <div className="flex justify-center items-center h-screen pb-16">
+    <MoonLoader color="#007bff" loading={carregando} size={50} />
+  </div>
+  );
   if (!cliente) return <div className="p-4 text-red-500">Cliente não encontrado.</div>;
 
   // Renderiza os detalhes do cliente e suas informações relacionadas.
@@ -135,7 +140,7 @@ const ClienteDetalhes = () => {
           {/* Mapeia as contas do cliente para exibir cada uma em um item da lista */}
           {contas.map(conta => (
             <li key={conta.id} className="border rounded p-2">
-              {/* Tipo da conta */}
+              {/* Tipo daPacmanLoader conta */}
               <p><strong>Tipo:</strong> {conta.tipo || 'Tipo não informado'}</p>
               {/* Saldo da conta, formatado como moeda */}
               <p><strong>Saldo:</strong> {formatarMoeda(conta.saldo)}</p>
