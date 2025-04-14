@@ -7,13 +7,8 @@ import { Cliente } from '../types'; // Importa a interface Cliente para tipagem.
 const compararClientes = (a: Cliente, b: Cliente) => {
   const nomeA = (a.nome || '').toLowerCase();
   const nomeB = (b.nome || '').toLowerCase();
-
-  if (nomeA < nomeB) {
-    return -1;
-  }
-  if (nomeA > nomeB) {
-    return 1;
-  }
+  if (nomeA < nomeB) return -1;
+  if (nomeA > nomeB) return 1;
   return 0;
 };
 
@@ -23,7 +18,7 @@ const Home = () => {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   // Define um estado para controlar o termo de busca inserido pelo usuário.
   const [busca, setBusca] = useState('');
-  // Define um estado para controlar a página atual da lista paginada, iniciando na página 1.
+  // Define um estado para controlar a página atual da lista paginada, iniciando na página 1 ou do sessionStorage.
   const [paginaAtual, setPaginaAtual] = useState(() => {
     const storedPage = sessionStorage.getItem('clientesPagina');
     return storedPage ? parseInt(storedPage, 10) : 1;
@@ -49,18 +44,23 @@ const Home = () => {
     carregarClientes();
   }, []); // Será executado apenas uma vez.
 
+  // Salva a página atual no sessionStorage sempre que ela mudar.
+  useEffect(() => {
+    sessionStorage.setItem('clientesPagina', String(paginaAtual));
+  }, [paginaAtual]);
+
   // Filtra a lista de clientes com base no termo de busca. A busca é case-insensitive e procura por nome ou CPF/CNPJ.
   const clientesFiltrados = clientes.filter(cliente =>
-    (cliente.nome || '').toLowerCase().includes(busca.toLowerCase()) || // Verifica se o nome do cliente (tratando undefined como '') inclui o termo de busca (em minúsculas).
-    (cliente.cpfCnpj || '').includes(busca) // Verifica se o CPF/CNPJ do cliente (tratando undefined como '') inclui o termo de busca.
+    (cliente.nome || '').toLowerCase().includes(busca.toLowerCase()) ||
+    (cliente.cpfCnpj || '').includes(busca)
   );
 
   // Calcula o número total de páginas com base no número de clientes filtrados e itens por página.
   const totalPaginas = Math.ceil(clientesFiltrados.length / itensPorPagina);
   // Obtém a porção de clientes filtrados para a página atual.
   const clientesPaginados = clientesFiltrados.slice(
-    (paginaAtual - 1) * itensPorPagina, // Calcula o índice inicial.
-    paginaAtual * itensPorPagina // Calcula o índice final.
+    (paginaAtual - 1) * itensPorPagina,
+    paginaAtual * itensPorPagina
   );
 
   // Função para lidar com o clique no cliente e salvar a página atual antes de navegar.
@@ -93,15 +93,12 @@ const Home = () => {
       {/* Lista de clientes paginada */}
       <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {clientesPaginados.map(cliente => (
-          // Item da lista para cada cliente
           <li key={cliente.id} className="border p-4 rounded-lg shadow-sm hover:shadow-md transition">
             <div
               onClick={() => handleClienteClick(cliente.id)}
               className="block hover:bg-gray-50 p-2 rounded cursor-pointer"
             >
-              {/* Exibe o nome do cliente ou uma mensagem se o nome não estiver disponível */}
               <p className="font-semibold text-lg">{cliente.nome || 'Nome não informado'}</p>
-              {/* Exibe o CPF/CNPJ do cliente ou uma mensagem se não estiver disponível */}
               <p className="text-sm text-gray-600">{cliente.cpfCnpj || 'CPF/CNPJ não informado'}</p>
             </div>
           </li>
@@ -111,7 +108,6 @@ const Home = () => {
       {/* Seção de paginação (apenas se houver mais de uma página) */}
       {totalPaginas > 1 && (
         <div className="flex flex-wrap justify-center gap-2 mt-6">
-          {/* Cria botões para cada página */}
           {Array.from({ length: totalPaginas }, (_, i) => (
             <button
               key={i}
