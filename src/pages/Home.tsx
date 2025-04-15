@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Helmet } from 'react-helmet-async'; // Importe Helmet
 import { useNavigate } from 'react-router-dom';
 import { fetchClientes } from '../services/api';
 import { Cliente } from '../types';
@@ -15,8 +16,7 @@ const compararClientes = (a: Cliente, b: Cliente): number => {
 
 const Home: React.FC = () => {
   const [clientes, setClientes] = useState<Cliente[]>([]);
-  const [carregando, estaCarregando] = useState<boolean>(false); // Novo estado para controlar o loading
-  // Inicializa busca e página atual a partir do sessionStorage para persistência
+  const [carregando, estaCarregando] = useState<boolean>(false);
   const [busca, setBusca] = useState<string>(() => sessionStorage.getItem('clientesBusca') || '');
   const [paginaAtual, setPaginaAtual] = useState<number>(() => {
     const storedPage = sessionStorage.getItem('clientesPagina');
@@ -26,25 +26,22 @@ const Home: React.FC = () => {
   const itensPorPagina: number = 10;
   const navigate = useNavigate();
 
-  // Carrega e ordena os clientes na montagem inicial do componente
   useEffect(() => {
     const carregarClientes = async () => {
-      estaCarregando(true); // Inicia o loading antes de buscar os dados
+      estaCarregando(true);
       try {
         const dados = await fetchClientes();
         const clientesOrdenados = [...dados].sort(compararClientes);
         setClientes(clientesOrdenados);
       } catch (error) {
         console.error("Erro ao carregar clientes:", error);
-        // Considerar adicionar um estado de erro para feedback ao usuário
       } finally {
-        estaCarregando(false); // Finaliza o loading, independentemente do resultado
+        estaCarregando(false);
       }
     };
     carregarClientes();
-  }, []); // Array vazio indica que executa apenas na montagem
+  }, []);
 
-  // Persiste busca e página atual no sessionStorage sempre que mudarem
   useEffect(() => {
     sessionStorage.setItem('clientesBusca', busca);
   }, [busca]);
@@ -53,39 +50,32 @@ const Home: React.FC = () => {
     sessionStorage.setItem('clientesPagina', String(paginaAtual));
   }, [paginaAtual]);
 
-  // Filtra os clientes com base no termo de busca (nome ou CPF/CNPJ)
   const clientesFiltrados = clientes.filter(cliente =>
     (cliente.nome || '').toLowerCase().includes(busca.toLowerCase()) ||
-    (cliente.cpfCnpj || '').includes(busca) // CPF/CNPJ geralmente não precisa de toLowerCase
+    (cliente.cpfCnpj || '').includes(busca)
   );
 
-  // Calcula o número total de páginas com base nos resultados filtrados
   const totalPaginas = Math.ceil(clientesFiltrados.length / itensPorPagina);
 
-  // Efeito para ajustar a página atual caso ela se torne inválida após um filtro
   useEffect(() => {
-    const maxPagina = Math.max(1, totalPaginas); // Garante que maxPagina seja pelo menos 1
+    const maxPagina = Math.max(1, totalPaginas);
     if (paginaAtual > maxPagina) {
       setPaginaAtual(maxPagina);
     }
   }, [totalPaginas, paginaAtual]);
 
-  // Calcula os índices
   const indiceInicial = Math.max(0, (paginaAtual - 1)) * itensPorPagina;
   const clientesPaginados = clientesFiltrados.slice(indiceInicial, indiceInicial + itensPorPagina);
 
-  // Navega para a página de detalhes do cliente
   const handleClienteClick = (id: string) => {
     navigate(`/cliente/${id}`);
   };
 
-  // Altera a página atual, garantindo que o valor esteja dentro dos limites válidos
   const handlePaginaChange = (novaPagina: number) => {
     const paginaValida = Math.max(1, Math.min(novaPagina, totalPaginas || 1));
     setPaginaAtual(paginaValida);
   };
 
-  // Atualiza o termo de busca e reseta para a primeira página
   const handleBuscaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setBusca(e.target.value);
     setPaginaAtual(1);
@@ -93,6 +83,13 @@ const Home: React.FC = () => {
 
   return (
     <div className="p-4 max-w-6xl mx-auto">
+      <Helmet>
+        <title>Lista de Clientes - [Nome da Sua Instituição/Empresa]</title>
+        <meta
+          name="description"
+          content="Visualize e gerencie a lista de clientes cadastrados no sistema de processo seletivo de [Nome da Sua Instituição/Empresa]. Filtre, pagine e acesse os detalhes de cada cliente."
+        />
+      </Helmet>
       <h1 className="text-2xl font-bold mb-6 text-center">Lista de Clientes</h1>
 
       <input
@@ -100,10 +97,9 @@ const Home: React.FC = () => {
         placeholder="Buscar por nome ou CPF/CNPJ"
         value={busca}
         onChange={handleBuscaChange}
-        className="border px-4 py-2 rounded w-full mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500" // Exemplo: troquei ring-banestes por blue
+        className="border px-4 py-2 rounded w-full mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
 
-      {/* Mensagens de estado: Carregando ou Nenhum resultado */}
       {carregando ? (
         <div className="flex justify-center items-center ">
           <MoonLoader color="#007bff" size={50} />
@@ -117,7 +113,6 @@ const Home: React.FC = () => {
             <p className="text-center text-gray-500 my-4">Nenhum cliente encontrado para "{busca}".</p>
           )}
 
-          {/* Lista de Clientes Paginados */}
           {clientesPaginados.length > 0 && (
             <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {clientesPaginados.map(cliente => (
@@ -134,7 +129,6 @@ const Home: React.FC = () => {
             </ul>
           )}
 
-          {/* Controles de Paginação */}
           {totalPaginas > 1 && (
             <div className="flex flex-wrap justify-center gap-2 mt-6">
               {Array.from({ length: totalPaginas }, (_, i) => {
@@ -147,7 +141,7 @@ const Home: React.FC = () => {
                     disabled={isCurrent}
                     className={`px-4 py-1 rounded border transition ${
                       isCurrent
-                        ? 'bg-blue-600 text-white font-medium cursor-default' // Exemplo: troquei cor banestes por blue
+                        ? 'bg-blue-600 text-white font-medium cursor-default'
                         : 'bg-white hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed'
                     }`}
                   >

@@ -1,0 +1,15 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /wp-admin/
+Disallow: /cgi-bin/
+Disallow: /tmp/
+Disallow: /cache/
+Disallow: /inscricao/privado/
+Disallow: /resultados-internos/
+
+Allow: /inscricao/publico/
+Allow: /vagas/
+Allow: /detalhe-vaga/
+Allow: /cronograma/
+
+Sitemap: https://www.seusite.com.br/sitemap.xml

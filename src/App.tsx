@@ -4,7 +4,8 @@ import Footer from './components/Footer';
 import Home from './pages/Home';
 import ClienteDetalhes from './pages/ClienteDetalhes';
 import DashboardSimplificado from './components/DashboardSimplificado';
-import './assets/styles/index.css'; // Certifique-se de que o caminho está correto
+import './assets/styles/index.css';
+import ErrorBoundary from '../ErrorBoundary';
 
 function App() {
   return (
@@ -16,7 +17,14 @@ function App() {
         <div className="flex-1">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/cliente/:id" element={<ClienteDetalhes />} />
+            <Route
+              path="/cliente/:id"
+              element={
+                <ErrorBoundary>
+                  <ClienteDetalhes />
+                </ErrorBoundary>
+              }
+            />
           </Routes>
         </div>
         <Footer />
