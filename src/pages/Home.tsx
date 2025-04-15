@@ -5,6 +5,7 @@ import { fetchClientes } from '../services/api';
 import { Cliente } from '../types';
 import { MoonLoader } from 'react-spinners';
 
+// Função de comparação para ordenar os clientes pelo nome de forma alfabética
 const compararClientes = (a: Cliente, b: Cliente): number => {
   const nomeA = (a.nome || '').toLowerCase();
   const nomeB = (b.nome || '').toLowerCase();
@@ -25,12 +26,13 @@ const Home: React.FC = () => {
   const itensPorPagina: number = 10;
   const navigate = useNavigate();
 
+  // Carregar clientes ao montar o componente
   useEffect(() => {
     const carregarClientes = async () => {
       estaCarregando(true);
       try {
         const dados = await fetchClientes();
-        const clientesOrdenados = [...dados].sort(compararClientes);
+        const clientesOrdenados = [...dados].sort(compararClientes); // Ordenar os clientes por nome
         setClientes(clientesOrdenados);
       } catch (error) {
         console.error("Erro ao carregar clientes:", error);
@@ -41,14 +43,17 @@ const Home: React.FC = () => {
     carregarClientes();
   }, []);
 
+  // Atualizar busca no sessionStorage sempre que o valor de busca mudar
   useEffect(() => {
     sessionStorage.setItem('clientesBusca', busca);
   }, [busca]);
 
+  // Atualizar página atual no sessionStorage sempre que a página mudar
   useEffect(() => {
     sessionStorage.setItem('clientesPagina', String(paginaAtual));
   }, [paginaAtual]);
 
+  // Filtrar clientes baseado na busca (nome ou CPF/CNPJ)
   const clientesFiltrados = clientes.filter(cliente =>
     (cliente.nome || '').toLowerCase().includes(busca.toLowerCase()) ||
     (cliente.cpfCnpj || '').includes(busca)
@@ -56,6 +61,7 @@ const Home: React.FC = () => {
 
   const totalPaginas = Math.ceil(clientesFiltrados.length / itensPorPagina);
 
+  // Ajustar a página atual caso o número de páginas tenha mudado
   useEffect(() => {
     if (clientes.length === 0) return;
 
@@ -65,18 +71,22 @@ const Home: React.FC = () => {
     }
   }, [totalPaginas, paginaAtual, clientes]);
 
+  // Calcular o índice inicial para a páginação
   const indiceInicial = Math.max(0, (paginaAtual - 1)) * itensPorPagina;
   const clientesPaginados = clientesFiltrados.slice(indiceInicial, indiceInicial + itensPorPagina);
 
+  // Navegar para a página de detalhes do cliente
   const handleClienteClick = (id: string) => {
     navigate(`/cliente/${id}`);
   };
 
+  // Mudar para uma nova página
   const handlePaginaChange = (novaPagina: number) => {
     const paginaValida = Math.max(1, Math.min(novaPagina, totalPaginas || 1));
     setPaginaAtual(paginaValida);
   };
 
+  // Atualizar o valor da busca e resetar a página para a 1
   const handleBuscaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setBusca(e.target.value);
     setPaginaAtual(1);
@@ -91,8 +101,10 @@ const Home: React.FC = () => {
           content="Visualize e gerencie a lista de clientes cadastrados no sistema de processo seletivo de [Nome da Sua Instituição/Empresa]. Filtre, pagine e acesse os detalhes de cada cliente."
         />
       </Helmet>
+
       <h1 className="text-2xl font-bold mb-6 text-center">Lista de Clientes</h1>
 
+      {/* Campo de busca */}
       <input
         type="text"
         placeholder="Buscar por nome ou CPF/CNPJ"
@@ -107,6 +119,7 @@ const Home: React.FC = () => {
         </div>
       ) : (
         <>
+          {/* Mensagens de estado quando não há clientes ou não encontrados */}
           {clientes.length === 0 && !busca && (
             <p className="text-center text-gray-500 my-4">Nenhum cliente cadastrado ainda.</p>
           )}
@@ -114,6 +127,7 @@ const Home: React.FC = () => {
             <p className="text-center text-gray-500 my-4">Nenhum cliente encontrado para "{busca}".</p>
           )}
 
+          {/* Exibição dos clientes paginados */}
           {clientesPaginados.length > 0 && (
             <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {clientesPaginados.map(cliente => (
@@ -130,6 +144,7 @@ const Home: React.FC = () => {
             </ul>
           )}
 
+          {/* Navegação entre páginas */}
           {totalPaginas > 1 && (
             <div className="flex flex-wrap justify-center gap-2 mt-6">
               {Array.from({ length: totalPaginas }, (_, i) => {
@@ -142,8 +157,8 @@ const Home: React.FC = () => {
                     disabled={isCurrent}
                     className={`px-4 py-1 rounded border transition ${
                       isCurrent
-                        ? 'bg-blue-600 text-white font-medium cursor-default'
-                        : 'bg-white hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed'
+                        ? 'bg-banestes-500 text-white font-medium cursor-default'
+                        : 'bg-white hover:bg-banestes-300 disabled:opacity-50 disabled:cursor-not-allowed'
                     }`}
                   >
                     {numeroPagina}

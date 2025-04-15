@@ -1,4 +1,3 @@
-// ClienteDetalhes.tsx
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { fetchClientes, fetchContas, fetchAgencias } from '../services/api';
@@ -6,18 +5,25 @@ import { Cliente, Conta, Agencia } from '../types';
 import { MoonLoader } from 'react-spinners';
 import { Helmet } from 'react-helmet-async';
 
+// Função para formatar valores monetários
 function formatarMoeda(valor: string | number | null | undefined): string {
   if (valor === null || valor === undefined || valor === '' || isNaN(Number(valor))) return 'informação indisponível';
+  
   try {
     let numero: number;
+    
+    // Verifica se o valor é string ou número
     if (typeof valor === 'string') {
       const valorLimpo = valor.replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
       numero = parseFloat(valorLimpo);
-      if (isNaN(numero)) numero = 0;
+      if (isNaN(numero)) return 'informação indisponível'; // Retorna mensagem caso o valor não seja válido
     } else if (typeof valor === 'number') {
       numero = valor;
-    } else return 'informação indisponível';
+    } else {
+      return 'informação indisponível';
+    }
 
+    // Retorna o valor formatado para moeda
     return numero.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   } catch (err) {
     console.error('Erro ao formatar valor:', err);
@@ -33,6 +39,7 @@ const ClienteDetalhes = () => {
   const [carregandoDados, setCarregandoDados] = useState(true);
   const [exibirMapa, setExibirMapa] = useState(false);
 
+  // Função para carregar os dados do cliente, contas e agência
   useEffect(() => {
     const carregarDados = async () => {
       try {
@@ -51,6 +58,7 @@ const ClienteDetalhes = () => {
         }
       } catch (error) {
         console.error('Erro ao carregar dados:', error);
+        // Aqui pode ser interessante exibir um erro amigável para o usuário
       } finally {
         setCarregandoDados(false);
       }
@@ -59,10 +67,12 @@ const ClienteDetalhes = () => {
     carregarDados();
   }, [id]);
 
+  // Função para iniciar o carregamento do mapa
   const iniciarCarregamentoMapa = () => {
     setExibirMapa(true);
   };
 
+  // Exibe carregando enquanto os dados estão sendo processados
   if (carregandoDados) {
     return (
       <div className="flex justify-center items-center h-32">
@@ -71,6 +81,7 @@ const ClienteDetalhes = () => {
     );
   }
 
+  // Caso o cliente não seja encontrado
   if (!cliente) return <div className="p-4 text-red-500">Cliente não encontrado.</div>;
 
   return (
@@ -83,10 +94,12 @@ const ClienteDetalhes = () => {
         />
       </Helmet>
 
+      {/* Botão para voltar */}
       <Link to="/" className="bg-banestes-400 text-white font-bold rounded-full py-2 px-4 shadow-md hover:bg-banestes-500 mb-4 inline-block">
         ← Voltar
       </Link>
 
+      {/* Exibe informações básicas do cliente */}
       <h1 className="text-2xl font-bold">{cliente?.nomeSocial || cliente?.nome || 'Nome não informado'}</h1>
       <p className="text-gray-700">{cliente?.email || 'Email não informado'}</p>
       <p className="text-gray-700">{cliente?.cpfCnpj ? `CPF/CNPJ: ${cliente.cpfCnpj}` : cliente?.rg ? `RG: ${cliente.rg}` : 'CPF/CNPJ ou RG Não informado'}</p>
@@ -95,6 +108,7 @@ const ClienteDetalhes = () => {
       <p className="text-gray-700">Patrimônio: {formatarMoeda(cliente?.patrimonio)}</p>
       <p className="text-gray-700">Estado civil: {cliente?.estadoCivil || 'Não informado'}</p>
 
+      {/* Exibe informações das contas bancárias */}
       <h2 className="text-xl font-semibold mt-6 mb-2">Contas bancárias</h2>
       {contas.length > 0 ? (
         <ul className="space-y-2">
@@ -111,12 +125,14 @@ const ClienteDetalhes = () => {
         <p className="text-gray-500">Este cliente não possui contas cadastradas.</p>
       )}
 
+      {/* Exibe informações da agência */}
       <h2 className="text-xl font-semibold mt-6 mb-2">Agência</h2>
       {agencia ? (
         <>
           <p><strong>Nome:</strong> {agencia?.nome || 'Não informado'}</p>
           <p><strong>Endereço:</strong> {agencia?.endereco || 'Não informado'}</p>
 
+          {/* Botão para mostrar o mapa da localização */}
           {!exibirMapa && (
             <button
               onClick={iniciarCarregamentoMapa}
@@ -127,6 +143,7 @@ const ClienteDetalhes = () => {
             </button>
           )}
 
+          {/* Exibe o mapa da agência quando solicitado */}
           {exibirMapa && agencia?.endereco && (
             <div
               style={{
