@@ -1,10 +1,11 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { fetchClientes, fetchContas, fetchAgencias } from '../services/api';
 import { Cliente, Conta, Agencia } from '../types';
 import { MoonLoader } from 'react-spinners';
 import { Helmet } from 'react-helmet-async';
-import useGoogleMaps from '../hooks/useGoogleMaps';
+// Remova a importação do hook useGoogleMaps
+// import useGoogleMaps from '../hooks/useGoogleMaps';
 
 function formatarMoeda(valor: string | number | null | undefined): string {
   if (valor === null || valor === undefined || valor === '' || isNaN(Number(valor))) return 'informação indisponível';
@@ -29,20 +30,12 @@ const ClienteDetalhes = () => {
   const [contas, setContas] = useState<Conta[]>([]);
   const [agencia, setAgencia] = useState<Agencia | null>(null);
   const [carregandoDados, setCarregandoDados] = useState(true);
-  const [carregandoMapa, setCarregandoMapa] = useState(false);
-  const [map, setMap] = useState<google.maps.Map | null>(null);
-  const mapRef = useRef<HTMLDivElement>(null);
   const [exibirMapa, setExibirMapa] = useState(false);
-  const [isMapDivMounted, setIsMapDivMounted] = useState(false);
-  const { isLoaded: isGoogleMapsLoaded, googleMaps, loadError: googleMapsLoadError } = useGoogleMaps("AIzaSyDeEicRyYhAnJ1qSU6gvYGAep1oyFupABo", ['places']);
-
-  useEffect(() => {
-    if (exibirMapa && mapRef.current && !isMapDivMounted) {
-      setIsMapDivMounted(true);
-    } else if (!exibirMapa && isMapDivMounted) {
-      setIsMapDivMounted(false);
-    }
-  }, [exibirMapa, mapRef, isMapDivMounted]);
+  // Remova as referências ao mapa da API JavaScript
+  // const [carregandoMapa, setCarregandoMapa] = useState(false);
+  // const [map, setMap] = useState<google.maps.Map | null>(null);
+  // const mapRef = useRef<HTMLDivElement>(null);
+  // const { isLoaded: isGoogleMapsLoaded, googleMaps, loadError: googleMapsLoadError } = useGoogleMaps("AIzaSyDeEicRyYhAnJ1qSU6gvYGAep1oyFupABo", ['places']);
 
   useEffect(() => {
     const carregarDados = async () => {
@@ -63,81 +56,13 @@ const ClienteDetalhes = () => {
     carregarDados();
   }, [id]);
 
-  const geocodeAndAddMarker = useCallback(
-    (
-      mapInstance: google.maps.Map,
-      agenciaData: Agencia,
-      Geocoder: typeof google.maps.Geocoder,
-      Marker: typeof google.maps.Marker
-    ) => {
-      if (!googleMaps) return; // Garante que googleMaps esteja carregado
-      const geocoder = new googleMaps.Geocoder();
-      const enderecoCompleto = `Banestes ${agenciaData.nome}, ${agenciaData.endereco}`;
-      geocoder.geocode(
-        { address: enderecoCompleto },
-        (results: google.maps.GeocoderResult[] | null, status: google.maps.GeocoderStatus) => {
-          if (status === 'OK' && results && results.length > 0) {
-            new googleMaps.Marker({ map: mapInstance, position: results[0].geometry.location, title: agenciaData.nome || 'Agência' });
-            mapInstance.setCenter(results[0].geometry.location);
-          } else {
-            console.error('Geocoding falhou:', status);
-            geocoder.geocode(
-              { address: agenciaData.endereco },
-              (fallbackResults: google.maps.GeocoderResult[] | null, fallbackStatus: google.maps.GeocoderStatus) => {
-                if (fallbackStatus === 'OK' && fallbackResults && fallbackResults.length > 0) {
-                  new googleMaps.Marker({ map: mapInstance, position: fallbackResults[0].geometry.location, title: agenciaData.nome || 'Agência (Localização aproximada)' });
-                  mapInstance.setCenter(fallbackResults[0].geometry.location);
-                } else {
-                  console.error('Geocoding falhou novamente com o endereço simples:', fallbackStatus);
-                }
-              }
-            );
-          }
-        }
-      );
-    },
-    [googleMaps]
-  );
-
-  const iniciarCarregamentoMapa = useCallback(() => {
+  const iniciarCarregamentoMapa = () => {
     console.log("Botão 'Mostrar Localização da Agência' clicado!");
     setExibirMapa(true);
-  }, []);
+  };
 
-  useEffect(() => {
-    let currentMap: google.maps.Map | null = null;
-    console.log('useEffect mapa acionado', { exibirMapa, agencia, mapRef: mapRef.current, map, isGoogleMapsLoaded, googleMapsLoadError, isMapDivMounted });
-  
-    if (exibirMapa && isMapDivMounted && agencia && mapRef.current && !map && isGoogleMapsLoaded && googleMaps) {
-      console.log('Condição para inicializar o mapa atendida (com hook)');
-      setCarregandoMapa(true);
-      try {
-        const mapOptions: google.maps.MapOptions = { center: { lat: -20.8358, lng: -40.7161 }, zoom: 15 };
-        const newMap = new googleMaps.Map(mapRef.current, mapOptions);
-        currentMap = newMap;
-        setMap(currentMap);
-        console.log('Mapa inicializado com sucesso (com hook)', { currentMap });
-        geocodeAndAddMarker(currentMap, agencia, googleMaps.Geocoder, googleMaps.Marker);
-      } catch (error) {
-        console.error('Erro ao inicializar o mapa (com hook):', error);
-      } finally {
-        setCarregandoMapa(false);
-      }
-    } else if (googleMapsLoadError) {
-      console.error('Erro ao carregar a API do Google Maps:', googleMapsLoadError);
-      setCarregandoMapa(false);
-    } else {
-      console.log('Condição para inicializar o mapa NÃO atendida (com hook)');
-    }
-  
-    return () => {
-      // ... (código de limpeza) ...
-    };
-  }, [exibirMapa, isMapDivMounted, agencia, map, mapRef, isGoogleMapsLoaded, googleMaps, geocodeAndAddMarker, googleMapsLoadError]);
-
-  useEffect(() => {
-    console.log('mapRef.current:', mapRef.current);
-  }, [mapRef.current]);
+  // Remova o useEffect relacionado à inicialização do mapa da API JavaScript
+  // useEffect(() => { ... }, [exibirMapa, agencia, isGoogleMapsLoaded, googleMaps, geocodeAndAddMarker, map]);
 
   if (carregandoDados) return <div className="flex justify-center items-center h-32"><MoonLoader color="#007bff" loading={carregandoDados} size={50} /></div>;
   if (!cliente) return <div className="p-4 text-red-500">Cliente não encontrado.</div>;
@@ -185,17 +110,19 @@ const ClienteDetalhes = () => {
             </button>
           )}
           {exibirMapa && (
-            <div ref={mapRef} style={{ height: '200px', width: '100%', marginTop: '10px', borderRadius: '8px', overflow: 'hidden', transition: 'height 0.3s ease-in-out' }}>
-              {carregandoMapa && (
-                <div className="flex justify-center items-center h-full">
-                  <MoonLoader color="#007bff" loading={carregandoMapa} size={30} />
-                </div>
-              )}
-            </div>
+            <iframe
+              src={`https://www.google.com/maps/embed/v1/place?key=${"AIzaSyDeEicRyYhAnJ1qSU6gvYGAep1oyFupABo"}&q=${encodeURIComponent(`Banestes ${agencia.nome}, ${agencia.endereco}`)}`}
+              width="100%"
+              height="300"
+              style={{ border: 0 }}
+              allowFullScreen={true}
+              loading="lazy"
+              title={`Mapa da agência ${agencia.nome}`}
+            ></iframe>
           )}
         </>
       ) : (
-        <p className="text-gray-500">Agência não identificada ou não vinculada.</p>
+        <p className="text-gray-500">Agência não encontrada.</p>
       )}
     </div>
   );

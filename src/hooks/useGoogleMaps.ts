@@ -25,7 +25,6 @@ const useGoogleMaps = (apiKey: string, libraries: string[] = []) => {
       return;
     }
 
-    // Define a função de callback no escopo global antes de carregar o script
     windowWithGoogle.initGoogleMaps = () => {
       setIsLoaded(true);
       setGoogleMaps(windowWithGoogle.google?.maps ?? null);
@@ -35,6 +34,7 @@ const useGoogleMaps = (apiKey: string, libraries: string[] = []) => {
     script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=${libraries.join(',')}`;
     script.async = true;
     script.defer = true;
+    script.setAttribute('loading', 'async'); // Adicionando o atributo loading
 
     script.onerror = () => {
       setLoadError(new Error('Falha ao carregar a API do Google Maps'));
@@ -44,7 +44,6 @@ const useGoogleMaps = (apiKey: string, libraries: string[] = []) => {
     googleMapsScriptLoaded = true;
 
     return () => {
-      // Limpa a função global ao desmontar
       delete windowWithGoogle.initGoogleMaps;
     };
   }, [apiKey, libraries, isLoaded]);

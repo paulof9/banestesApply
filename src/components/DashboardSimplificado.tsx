@@ -19,11 +19,22 @@ const DashboardSimplificado = () => {
       try {
         const clientes = await fetchClientes();
         const contas = await fetchContas();
-
-        const totalClientes = clientes.length;
-        const contasCorrente = contas.filter(conta => conta.tipo === 'corrente').length;
-        const contasPoupanca = contas.filter(conta => conta.tipo === 'poupanca').length;
-
+  
+        // Elimina clientes duplicados com base no 'id' do cliente
+        const clientesUnicos = Array.from(new Set(clientes.map(cliente => cliente.id))).map(id => {
+          return clientes.find(cliente => cliente.id === id);
+        });
+  
+        // Elimina contas duplicadas com base no 'cpfCnpjCliente' (relacionando com o cliente)
+        const contasUnicas = Array.from(new Set(contas.map(conta => conta.cpfCnpjCliente))).map(cpfCnpjCliente => {
+          return contas.find(conta => conta.cpfCnpjCliente === cpfCnpjCliente);
+        });
+  
+        // Filtra e garante que a conta exista
+        const totalClientes = clientesUnicos.length;
+        const contasCorrente = contasUnicas.filter(conta => conta?.tipo === 'corrente').length;
+        const contasPoupanca = contasUnicas.filter(conta => conta?.tipo === 'poupanca').length;
+  
         setDashboardData({
           totalClientes,
           contasCorrente,
@@ -34,9 +45,10 @@ const DashboardSimplificado = () => {
         // Lide com o erro de forma apropriada (ex: exibir uma mensagem ao usuário)
       }
     };
-
+  
     carregarEstatisticas();
   }, []);
+  
 
   return (
     <div className="overflow-hidden bg-gray-100 text-gray-700 py-2 whitespace-nowrap">
