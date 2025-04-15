@@ -1,3 +1,4 @@
+// useGoogleMaps.js
 import { useState, useEffect } from 'react';
 
 interface GoogleMapsWindow extends Window {
@@ -7,7 +8,7 @@ interface GoogleMapsWindow extends Window {
   };
 }
 
-let googleMapsScriptLoaded = false;
+let googleMapsScriptLoaded = false; // Declare a global variable
 
 const useGoogleMaps = (apiKey: string, libraries: string[] = []) => {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -34,7 +35,6 @@ const useGoogleMaps = (apiKey: string, libraries: string[] = []) => {
     script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=${libraries.join(',')}`;
     script.async = true;
     script.defer = true;
-    script.setAttribute('loading', 'async'); // Adicionando o atributo loading
 
     script.onerror = () => {
       setLoadError(new Error('Falha ao carregar a API do Google Maps'));
@@ -45,6 +45,7 @@ const useGoogleMaps = (apiKey: string, libraries: string[] = []) => {
 
     return () => {
       delete windowWithGoogle.initGoogleMaps;
+      googleMapsScriptLoaded = false;
     };
   }, [apiKey, libraries, isLoaded]);
 
