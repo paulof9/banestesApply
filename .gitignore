@@ -7,6 +7,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Node modules and build
 node_modules
 dist
 dist-ssr
@@ -22,3 +23,14 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Temporary files and caches
+.eslintcache
+*.bak
+*.tmp
+
+# TypeScript build files
+*.tsbuildinfo
+
+# Environment files
+.env

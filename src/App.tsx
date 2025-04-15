@@ -9,34 +9,36 @@ import ErrorBoundary from '../ErrorBoundary';
 
 function App() {
   return (
-    <Router basename="/banestesApply/"> {/* Adicione a prop basename aqui */}
-      {/* Flex para garantir que o footer fique no fim da página */}
+    <Router basename="/banestesApply/"> {/* Definindo basename para o Router */}
       <div className="flex flex-col min-h-screen">
         <Header />
-        <DashboardWrapper /> {/* Renderiza o DashboardWrapper diretamente */}
-        <div className="flex-1">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route
-              path="/cliente/:id"
-              element={
-                <ErrorBoundary>
-                  <ClienteDetalhes />
-                </ErrorBoundary>
-              }
-            />
-          </Routes>
-        </div>
+        <MainContent /> {/* Componente que gerencia a renderização do conteúdo principal */}
         <Footer />
       </div>
     </Router>
   );
 }
 
-// Componente auxiliar para renderizar o Dashboard apenas na rota "/"
-function DashboardWrapper() {
+// Componente para gerenciar o conteúdo principal
+function MainContent() {
   const location = useLocation();
-  return location.pathname === '/' ? <DashboardSimplificado /> : null;
+
+  return (
+    <div className="flex-1">
+      {location.pathname === '/' && <DashboardSimplificado />} {/* Renderiza o Dashboard apenas na rota '/' */}
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route
+          path="/cliente/:id"
+          element={
+            <ErrorBoundary>
+              <ClienteDetalhes />
+            </ErrorBoundary>
+          }
+        />
+      </Routes>
+    </div>
+  );
 }
 
 export default App;

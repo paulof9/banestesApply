@@ -1,4 +1,3 @@
-// useGoogleMaps.js
 import { useState, useEffect } from 'react';
 
 interface GoogleMapsWindow extends Window {
@@ -8,7 +7,7 @@ interface GoogleMapsWindow extends Window {
   };
 }
 
-let googleMapsScriptLoaded = false; // Declare a global variable
+let googleMapsScriptLoaded = false;
 
 const useGoogleMaps = (apiKey: string, libraries: string[] = []) => {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -18,30 +17,36 @@ const useGoogleMaps = (apiKey: string, libraries: string[] = []) => {
   useEffect(() => {
     const windowWithGoogle = window as GoogleMapsWindow;
 
+    const handleScriptError = () => {
+      setLoadError(new Error('Falha ao carregar a API do Google Maps'));
+    };
+
+    const loadScript = () => {
+      const script = document.createElement('script');
+      const libs = libraries.join(',');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=${libs}`;
+      script.async = true;
+      script.defer = true;
+      script.onerror = handleScriptError;
+
+      document.head.appendChild(script);
+      googleMapsScriptLoaded = true;
+    };
+
+    const initializeGoogleMaps = () => {
+      setIsLoaded(true);
+      setGoogleMaps(windowWithGoogle.google?.maps || null);
+    };
+
     if (!apiKey || isLoaded || windowWithGoogle.google?.maps || googleMapsScriptLoaded) {
       if (windowWithGoogle.google?.maps) {
-        setIsLoaded(true);
-        setGoogleMaps(windowWithGoogle.google.maps ?? null);
+        initializeGoogleMaps();
       }
       return;
     }
 
-    windowWithGoogle.initGoogleMaps = () => {
-      setIsLoaded(true);
-      setGoogleMaps(windowWithGoogle.google?.maps ?? null);
-    };
-
-    const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=${libraries.join(',')}`;
-    script.async = true;
-    script.defer = true;
-
-    script.onerror = () => {
-      setLoadError(new Error('Falha ao carregar a API do Google Maps'));
-    };
-
-    document.head.appendChild(script);
-    googleMapsScriptLoaded = true;
+    windowWithGoogle.initGoogleMaps = initializeGoogleMaps;
+    loadScript();
 
     return () => {
       delete windowWithGoogle.initGoogleMaps;

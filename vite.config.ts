@@ -14,4 +14,7 @@ export default defineConfig({
     compression(),
     compression({ algorithm: 'gzip' }),
   ],
+  build: {
+    target: 'es2015', // Ou outra versão mais antiga, se necessário
+  },
 });

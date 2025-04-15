@@ -1,7 +1,7 @@
-// api.ts
 import Papa, { ParseResult, ParseError } from 'papaparse';
 import { Cliente, Conta, Agencia } from '../types';
 
+// URLs das planilhas do Google Sheets (convertidas para CSV)
 const clientesURL =
   'https://docs.google.com/spreadsheets/d/1PBN_HQOi5ZpKDd63mouxttFvvCwtmY97Tb5if5_cdBA/gviz/tq?tqx=out:csv&sheet=clientes';
 const contasURL =
@@ -9,6 +9,7 @@ const contasURL =
 const agenciasURL =
   'https://docs.google.com/spreadsheets/d/1PBN_HQOi5ZpKDd63mouxttFvvCwtmY97Tb5if5_cdBA/gviz/tq?tqx=out:csv&sheet=agencias';
 
+// Interface genérica de configuração para o PapaParse
 interface PapaParseConfig<T> {
   header?: boolean;
   skipEmptyLines?: boolean;
@@ -17,6 +18,7 @@ interface PapaParseConfig<T> {
   fields?: string[];
 }
 
+// Função genérica para ler e transformar CSV em objetos do tipo T
 const parseCSV = async <T>(url: string, fields?: string[]): Promise<T[]> => {
   const response = await fetch(url);
   const text = await response.text();
@@ -26,15 +28,14 @@ const parseCSV = async <T>(url: string, fields?: string[]): Promise<T[]> => {
       header: true,
       skipEmptyLines: true,
       complete: (result: ParseResult<T>) => resolve(result.data),
-      error: (error: ParseError) => {
-        reject(error);
-      },
+      error: (error: ParseError) => reject(error),
       fields: fields,
     };
     Papa.parse<T>(text, config);
   });
 };
 
+// Função auxiliar para converter strings com R$ ou separadores em números
 const parseNumber = (value: string | number | undefined): number | undefined => {
   if (typeof value === 'string') {
     const cleanedValue = value
@@ -48,9 +49,11 @@ const parseNumber = (value: string | number | undefined): number | undefined => 
   return typeof value === 'number' ? value : undefined;
 };
 
+// Função para buscar e tratar os dados dos clientes
 export const fetchClientes = async (): Promise<Cliente[]> => {
   const fields = ['id', 'nome', 'cpfCnpj', 'dataNascimento', 'estadoCivil', 'rendaAnual', 'patrimonio', 'codigoAgencia', 'email', 'endereco'];
   const data = await parseCSV<any>(clientesURL, fields);
+
   return data.map((cliente): Cliente => ({
     id: cliente.id,
     nome: cliente.nome,
@@ -65,9 +68,11 @@ export const fetchClientes = async (): Promise<Cliente[]> => {
   }));
 };
 
+// Função para buscar e tratar os dados das contas
 export const fetchContas = async (): Promise<Conta[]> => {
   const fields = ['id', 'cpfCnpjCliente', 'tipo', 'saldo', 'limiteCredito', 'creditoDisponivel'];
   const data = await parseCSV<any>(contasURL, fields);
+
   return data.map((conta): Conta => ({
     id: conta.id,
     cpfCnpjCliente: conta.cpfCnpjCliente,
@@ -78,9 +83,11 @@ export const fetchContas = async (): Promise<Conta[]> => {
   }));
 };
 
+// Função para buscar e tratar os dados das agências
 export const fetchAgencias = async (): Promise<Agencia[]> => {
   const fields = ['id', 'codigo', 'nome', 'endereco'];
   const data = await parseCSV<any>(agenciasURL, fields);
+
   return data.map((agencia): Agencia => ({
     id: agencia.id,
     codigo: parseNumber(agencia.codigo) ?? 0,
