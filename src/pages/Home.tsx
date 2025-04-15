@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Helmet } from 'react-helmet-async'; // Importe Helmet
+import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import { fetchClientes } from '../services/api';
 import { Cliente } from '../types';
 import { MoonLoader } from 'react-spinners';
 
-// Função utilitária para ordenação alfabética (case-insensitive)
 const compararClientes = (a: Cliente, b: Cliente): number => {
   const nomeA = (a.nome || '').toLowerCase();
   const nomeB = (b.nome || '').toLowerCase();
@@ -58,11 +57,13 @@ const Home: React.FC = () => {
   const totalPaginas = Math.ceil(clientesFiltrados.length / itensPorPagina);
 
   useEffect(() => {
+    if (clientes.length === 0) return;
+
     const maxPagina = Math.max(1, totalPaginas);
     if (paginaAtual > maxPagina) {
       setPaginaAtual(maxPagina);
     }
-  }, [totalPaginas, paginaAtual]);
+  }, [totalPaginas, paginaAtual, clientes]);
 
   const indiceInicial = Math.max(0, (paginaAtual - 1)) * itensPorPagina;
   const clientesPaginados = clientesFiltrados.slice(indiceInicial, indiceInicial + itensPorPagina);
