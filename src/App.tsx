@@ -9,7 +9,7 @@ import ErrorBoundary from '../ErrorBoundary';
 
 function App() {
   return (
-    <Router>
+    <Router basename="/banestesApply/"> {/* Adicione a prop basename aqui */}
       {/* Flex para garantir que o footer fique no fim da página */}
       <div className="flex flex-col min-h-screen">
         <Header />

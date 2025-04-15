@@ -1,4 +1,5 @@
-import Papa from 'papaparse';
+// api.ts
+import Papa, { ParseResult, ParseError } from 'papaparse';
 import { Cliente, Conta, Agencia } from '../types';
 
 const clientesURL =
@@ -8,23 +9,29 @@ const contasURL =
 const agenciasURL =
   'https://docs.google.com/spreadsheets/d/1PBN_HQOi5ZpKDd63mouxttFvvCwtmY97Tb5if5_cdBA/gviz/tq?tqx=out:csv&sheet=agencias';
 
-const parseCSV = async <T>(url: string): Promise<T[]> => {
+interface PapaParseConfig<T> {
+  header?: boolean;
+  skipEmptyLines?: boolean;
+  complete?: (result: ParseResult<T>) => void;
+  error?: (error: ParseError) => void;
+  fields?: string[];
+}
+
+const parseCSV = async <T>(url: string, fields?: string[]): Promise<T[]> => {
   const response = await fetch(url);
   const text = await response.text();
 
   return new Promise((resolve, reject) => {
-    Papa.parse<T>(text, {
+    const config: PapaParseConfig<T> = {
       header: true,
       skipEmptyLines: true,
-      complete: (result) => resolve(result.data),
-      error: (error: unknown) => {
-        if (error instanceof Error) {
-          reject(error);
-        } else {
-          reject(new Error('Erro desconhecido ao processar CSV'));
-        }
+      complete: (result: ParseResult<T>) => resolve(result.data),
+      error: (error: ParseError) => {
+        reject(error);
       },
-    });
+      fields: fields,
+    };
+    Papa.parse<T>(text, config);
   });
 };
 
@@ -42,7 +49,8 @@ const parseNumber = (value: string | number | undefined): number | undefined => 
 };
 
 export const fetchClientes = async (): Promise<Cliente[]> => {
-  const data = await parseCSV<any>(clientesURL);
+  const fields = ['id', 'nome', 'cpfCnpj', 'dataNascimento', 'estadoCivil', 'rendaAnual', 'patrimonio', 'codigoAgencia', 'email', 'endereco'];
+  const data = await parseCSV<any>(clientesURL, fields);
   return data.map((cliente): Cliente => ({
     id: cliente.id,
     nome: cliente.nome,
@@ -58,7 +66,8 @@ export const fetchClientes = async (): Promise<Cliente[]> => {
 };
 
 export const fetchContas = async (): Promise<Conta[]> => {
-  const data = await parseCSV<any>(contasURL);
+  const fields = ['id', 'cpfCnpjCliente', 'tipo', 'saldo', 'limiteCredito', 'creditoDisponivel'];
+  const data = await parseCSV<any>(contasURL, fields);
   return data.map((conta): Conta => ({
     id: conta.id,
     cpfCnpjCliente: conta.cpfCnpjCliente,
@@ -70,7 +79,8 @@ export const fetchContas = async (): Promise<Conta[]> => {
 };
 
 export const fetchAgencias = async (): Promise<Agencia[]> => {
-  const data = await parseCSV<any>(agenciasURL);
+  const fields = ['id', 'codigo', 'nome', 'endereco'];
+  const data = await parseCSV<any>(agenciasURL, fields);
   return data.map((agencia): Agencia => ({
     id: agencia.id,
     codigo: parseNumber(agencia.codigo) ?? 0,
