@@ -95,10 +95,10 @@ const Home: React.FC = () => {
   return (
     <div className="p-4 max-w-6xl mx-auto">
       <Helmet>
-        <title>Lista de Clientes - [Nome da Sua Instituição/Empresa]</title>
+        <title>Lista de Clientes - Banestes</title>
         <meta
           name="description"
-          content="Visualize e gerencie a lista de clientes cadastrados no sistema de processo seletivo de [Nome da Sua Instituição/Empresa]. Filtre, pagine e acesse os detalhes de cada cliente."
+          content="Visualize e gerencie a lista de clientes cadastrados no sistema de processo seletivo do Banestes. Filtre, pagine e acesse os detalhes de cada cliente."
         />
       </Helmet>
 
