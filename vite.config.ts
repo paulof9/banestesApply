@@ -1,13 +1,12 @@
-// vite.config.ts
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import compression from 'vite-plugin-compression';
 
-const repositoryName = 'banestesApply'; // Substitua pelo nome do seu repositório
+const repositoryName = 'banestesApply';
 
 export default defineConfig({
-  base: `/${repositoryName}/`, // Adicione esta linha
+  base: `/${repositoryName}/`,
   plugins: [
     react(),
     tailwindcss(),
@@ -15,6 +14,6 @@ export default defineConfig({
     compression({ algorithm: 'gzip' }),
   ],
   build: {
-    target: 'es2015', // Ou outra versão mais antiga, se necessário
+    target: 'es2015',
   },
 });
